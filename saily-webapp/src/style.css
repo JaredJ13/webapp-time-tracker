@@ -1,0 +1,38 @@
+@import url("https://cdn.jsdelivr.net/gh/jgthms/minireset.css@master/minireset.min.css");
+@import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lobster&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* custom toast styles */
+.Vue-Toastification__toast--success {
+    background-color: transparent !important;
+    color: oklch(var(--a)) !important;
+}
+
+.Vue-Toastification__toast--error {
+    background-color: transparent !important; /* Semi-transparent background */
+    backdrop-filter: blur(1px) !important;
+    color: oklch(var(--er)) !important;
+}
+
+.Vue-Toastification__toast {
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+    min-width: 0px !important;
+    min-height: 0px !important;
+    padding: 10px 5px !important;
+}
+
+.Vue-Toastification__close-button {
+    color: #f7f7f7 !important;
+}
+
+.Vue-Toastification__toast-body {
+    font-weight: bold !important;
+}
+
+
+
