@@ -1,9 +1,9 @@
 <script setup>
 import Summary from './Summary.vue';
-import { EllipsisHorizontalIcon, PlusCircleIcon, MinusCircleIcon, PencilIcon } from '@heroicons/vue/20/solid';
+import { EllipsisHorizontalIcon, PlusCircleIcon, MinusCircleIcon, PencilIcon, ClockIcon } from '@heroicons/vue/20/solid';
 import { SuccessToast } from './toasts/SuccessToast';
 import { ErrorToast } from './toasts/ErrorToast';
-import { writeNewTime, readAllTimes, writeNewGroup, readAllGroups, editTime, endTime, deleteTime } from '../firebase/crudFunctions'
+import { writeNewTime, readAllTimes, writeNewGroup, readAllGroups, editTime, endTime, deleteTime, deactivateGroup, reactivateGroup } from '../firebase/crudFunctions'
 import { onMounted, reactive, computed, watch } from 'vue';
 import moment from 'moment'
 import lodash from 'lodash'
@@ -394,7 +394,41 @@ async function handleAddGroup() {
             ErrorToast('An error occurred while trying to create a new time group');
         }
     }
+}
 
+async function handleDeactivateGroup(group) {
+    // update group as not active in db and update local data
+    try {
+        const currentDate = new Date();
+        await deactivateGroup(group.docID);
+        const allGroupsCopy = lodash.cloneDeep(state.allGroups);
+        const groupIndex = allGroupsCopy.findIndex((x) => x.docID === group.docID);
+        allGroupsCopy[groupIndex]['active'] = false;
+        allGroupsCopy[groupIndex]['dateDeactivated'] = currentDate;
+        state.allGroups = allGroupsCopy;
+        SuccessToast(`${group.name} was deactivated`);
+    }
+    catch (err) {
+        console.log(err);
+        ErrorToast('An error occurred while trying to deactivate the time group');
+    }
+}
+
+async function handleReactivateGroup(group) {
+    // update group as active in db and update local data
+    try {
+        await reactivateGroup(group.docID);
+        const allGroupsCopy = lodash.cloneDeep(state.allGroups);
+        const groupIndex = allGroupsCopy.findIndex((x) => x.docID === group.docID);
+        allGroupsCopy[groupIndex]['active'] = true;
+        allGroupsCopy[groupIndex]['dateDeactivated'] = null;
+        state.allGroups = allGroupsCopy;
+        SuccessToast(`${group.name} was reactivated`);
+    }
+    catch (err) {
+        console.log(err);
+        ErrorToast('An error occurred while trying to reactivate the time group');
+    }
 }
 
 function getGroupName(groupDocID) {
@@ -463,6 +497,13 @@ function handleSwitchToEditTime(time) {
     time.editTime = !time.editTime;
 
     if (time.editTime) {
+        // check if another time is in edit mode, if so set it to false
+        const editModeTimeIndex = mainStore.allTimes.findIndex((x) => x.editTime === true && x.docID !== time.docID);
+        console.log(editModeTimeIndex)
+        if (editModeTimeIndex !== -1) {
+            mainStore.allTimes[editModeTimeIndex].editTime = false;
+        }
+
         // edit mode
         state.newTimeDescription = time.description;
         state.newStartTime.hours = time.startTime.getHours();
@@ -531,8 +572,8 @@ function handleFormatTimeRange(time) {
                         </li>
                         <li onclick="modal_manageGroups.showModal()">
                             <a class="flex justify-center p-2 group">
-                                Add Group
-                                <PlusCircleIcon class="w-6 group-hover:text-secondary" />
+                                Manage Time Groups
+                                <ClockIcon class="w-6 group-hover:text-secondary" />
                             </a>
                         </li>
                     </ul>
@@ -617,10 +658,11 @@ function handleFormatTimeRange(time) {
                     </div>
                     <div class="collapse-content">
                         <ul>
-                            <li v-for="group in activeGroups" :key="group.docID" class="flex items-center">{{ group.name
-                                }}
-                                <MinusCircleIcon
-                                    class="w-5 h-5 ml-1 hover:text-error hover:cursor-pointer hover:transition" />
+                            <li v-for="group in activeGroups" :key="group.docID" class="flex items-center">
+                                <MinusCircleIcon @click="handleDeactivateGroup(group)"
+                                    class="w-5 h-5 mr-1 hover:text-error hover:cursor-pointer hover:transition" /> {{
+                                        group.name
+                                    }}
                             </li>
                         </ul>
                     </div>
@@ -632,11 +674,11 @@ function handleFormatTimeRange(time) {
                     </div>
                     <div class="collapse-content">
                         <ul>
-                            <li v-for="group in inactiveGroups" :key="group.docID" class="flex items-center">{{
-                                group.name
-                                }}
-                                <PlusCircleIcon
-                                    class="w-5 h-5 ml-1 hover:text-primary hover:cursor-pointer hover:transition" />
+                            <li v-for="group in inactiveGroups" :key="group.docID" class="flex items-center">
+                                <PlusCircleIcon @click="handleReactivateGroup(group)"
+                                    class="w-5 h-5 mr-1 hover:text-success hover:cursor-pointer hover:transition" /> {{
+                                        group.name
+                                    }}
                             </li>
                         </ul>
                     </div>

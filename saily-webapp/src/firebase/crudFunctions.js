@@ -15,16 +15,14 @@ export async function writeNewGroup(uid, name, createdDate) {
     return docRef.id;
 }
 
-// export async function editProduct(name, price, measurement, description, docID) {
-//     let updateRef = await updateDoc(doc(db, `products/${docID}`), {
-//         name: name,
-//         price: price,
-//         measurement: measurement,
-//         description: description
-//     });
+export async function reactivateGroup(docID) {
+    let updateRef = await updateDoc(doc(db, `groups/${docID}`), {
+        active: true,
+        dateDeactivated: null
+    });
 
-//     return updateRef;
-// }
+    return updateRef;
+}
 
 export async function readAllGroups(uid) {
     const q = query(collection(db, "groups"), where("uid", "==", uid), orderBy("name"))
@@ -38,13 +36,14 @@ export async function readAllGroups(uid) {
     return groups;
 }
 
-// export async function deactivateProduct(docID) {
-//     let deactivateRef = await updateDoc(doc(db, `products/${docID}`), {
-//         dateDeactivated: new Date()
-//     });
+export async function deactivateGroup(docID) {
+    let deactivateRef = await updateDoc(doc(db, `groups/${docID}`), {
+        active: false,
+        dateDeactivated: new Date()
+    });
 
-//     return deactivateRef;
-// }
+    return deactivateRef;
+}
 
 
 

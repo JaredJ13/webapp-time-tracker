@@ -140,7 +140,7 @@ async function handleSignUp() {
                     Sign Up or Login with Google
                 </button>
             </div>  -->
-            <div class="w-9/12 sm:w-7/12 md:w-4/12 lg:w-3/12 mx-auto">
+            <form @submit.prevent="handleSignIn()" class="w-9/12 sm:w-7/12 md:w-4/12 lg:w-3/12 mx-auto">
                 <h2 class="text-xl text-center mb-2">Login</h2>
                 <label class="input input-bordered flex items-center gap-2 mb-2">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
@@ -150,7 +150,7 @@ async function handleSignUp() {
                         <path
                             d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
                     </svg>
-                    <input v-model.trim="email" type="text" class="grow" placeholder="Email" />
+                    <input v-model.trim="email" type="text" class="grow" placeholder="Email" autocomplete="email" />
                 </label>
                 <label class="input input-bordered flex items-center gap-2 mb-2">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
@@ -159,12 +159,15 @@ async function handleSignUp() {
                             d="M14 6a4 4 0 0 1-4.899 3.899l-1.955 1.955a.5.5 0 0 1-.353.146H5v1.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2.293a.5.5 0 0 1 .146-.353l3.955-3.955A4 4 0 1 1 14 6Zm-4-2a.75.75 0 0 0 0 1.5.5.5 0 0 1 .5.5.75.75 0 0 0 1.5 0 2 2 0 0 0-2-2Z"
                             clip-rule="evenodd" />
                     </svg>
-                    <input v-model.trim="password" type="password" class="grow" placeholder="Password" />
+                    <input v-model.trim="password" type="password" class="grow" placeholder="Password"
+                        autocomplete="password" />
                 </label>
                 <div class="flex justify-end">
-                    <button @click="handleSignIn()" class="btn btn-md btn-success">Login</button>
+                    <button type="submit" class="btn btn-md btn-success">Login</button>
                 </div>
                 <div className="divider my-12">OR</div>
+            </form>
+            <form @submit.prevent="handleSignUp()" class="w-9/12 sm:w-7/12 md:w-4/12 lg:w-3/12 mx-auto">
                 <h2 class="text-xl text-center mb-2">Sign Up for a Free Account</h2>
                 <label class="input input-bordered flex items-center gap-2 mb-2">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
@@ -174,7 +177,7 @@ async function handleSignUp() {
                         <path
                             d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
                     </svg>
-                    <input v-model.trim="newEmail" type="text" class="grow" placeholder="Email" />
+                    <input v-model.trim="newEmail" type="text" class="grow" placeholder="Email" autocomplete="email" />
                 </label>
                 <label class="input input-bordered flex items-center gap-2 mb-2">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
@@ -183,7 +186,8 @@ async function handleSignUp() {
                             d="M14 6a4 4 0 0 1-4.899 3.899l-1.955 1.955a.5.5 0 0 1-.353.146H5v1.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2.293a.5.5 0 0 1 .146-.353l3.955-3.955A4 4 0 1 1 14 6Zm-4-2a.75.75 0 0 0 0 1.5.5.5 0 0 1 .5.5.75.75 0 0 0 1.5 0 2 2 0 0 0-2-2Z"
                             clip-rule="evenodd" />
                     </svg>
-                    <input v-model.trim="newPassword" type="password" class="grow" placeholder="Password" />
+                    <input v-model.trim="newPassword" type="password" class="grow" placeholder="Password"
+                        autocomplete="password" />
                 </label>
                 <label class="input input-bordered flex items-center gap-2 mb-2">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
@@ -196,9 +200,9 @@ async function handleSignUp() {
                         placeholder="Confirm Password" />
                 </label>
                 <div class="flex justify-end mb-20">
-                    <button @click="handleSignUp()" class="btn btn-md btn-success">Sign Up</button>
+                    <button type="submit" class="btn btn-md btn-success">Sign Up</button>
                 </div>
-            </div>
+            </form>
 
         </div>
     </div>
