@@ -559,7 +559,7 @@ function handleFormatTimeRange(time) {
                             class="w-4 h-4 hover:text-secondary hover:cursor-pointer transition" />
                     </div>
                     <div
-                        :class="`task-timeline ${index % 2 ? 'timeline-end' : 'timeline-start md:text-start'} mb-10 sm:text-sm md:text-md lg:text-md ${!time.editTime ? 'w-12/12' : 'w-12/12'} sm:bg-base-200 sm:rounded-md sm:w-72 md:w-80 lg:w-96 p-2`">
+                        :class="`task-timeline ${index % 2 ? 'timeline-end' : 'timeline-start md:text-start'} max-sm:my-8 sm:mb-10 sm:text-sm md:text-md lg:text-md ${!time.editTime ? 'w-12/12' : 'w-12/12'} bg-base-200 rounded-md w-full sm:w-72 md:w-80 lg:w-96 p-2`">
                         <time v-if="!time.editTime" class="italic">{{
                             moment(time.startTime).format('LT') }} to {{
                                 time.endTime ?

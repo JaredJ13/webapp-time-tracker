@@ -28,12 +28,12 @@ function handleCopyToClipboard(string) {
 
 <template>
     <div class="font-robotoCondensed mb-6">
-        <h2 class="font-bold text-center text-xl md:text-2xl ">Group Summary</h2>
+        <h2 class="font-bold text-center text-xl md:text-2xl ">Daily Task Summary</h2>
 
         <!-- Total Stats -->
         <h3 class="text-center text-lg font-bold mt-8">All Tasks</h3>
         <div class="flex justify-center items-center">
-            <div class="stats sm:stats-horizontal shadow bg-default">
+            <div class="stats sm:stats-horizontal bg-base-200 shadow bg-default">
                 <div class="stat">
                     <div class="text-center">Total Tasks</div>
                     <div class="stat-value text-center text-accent">{{ totalTasks }}</div>
@@ -47,11 +47,11 @@ function handleCopyToClipboard(string) {
             </div>
         </div>
         <!--  Group Stats -->
-        <div class="w-11/12 md:w-7/12 mx-auto mb-10">
+        <div class="w-11/12 md:w-7/12 lg:w-4/12 xl:w-5/12 mx-auto mb-10">
             <div v-for="(total, index) in groupTotals" :key="index">
                 <h3 class="text-center text-lg font-bold mt-8 ">{{ total.name }}</h3>
                 <div class="flex justify-center items-center">
-                    <div class="stats sm:stats-horizontal shadow mt-1 bg-default">
+                    <div class="stats w-80 sm:stats-horizontal bg-base-200 shadow mt-1 bg-default">
                         <div class="stat">
                             <div class="text-center">Tasks</div>
                             <div class="stat-value text-center text-accent">{{ total.totalTasks }}</div>
@@ -66,7 +66,7 @@ function handleCopyToClipboard(string) {
                         </div>
                     </div>
                 </div>
-                <details class="collapse collapse-arrow bg-default mt-2 shadow" open>
+                <details class="collapse collapse-arrow bg-default mt-2 shadow bg-base-200" open>
                     <summary class="collapse-title text-sm text-default font-medium pb-0">Description:</summary>
                     <div class="collapse-content flex flex-col items-center">
                         <p class="whitespace-pre-wrap">{{ total.description }}</p>
