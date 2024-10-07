@@ -551,9 +551,9 @@ function handleFormatTimeRange(time) {
         <!-- start and stop buttons -->
         <div class="mb-10 mx-auto">
             <div class="flex justify-center items-center h-12">
-                <div class="dropdown">
-                    <div tabindex="0" role="button" class="mr-1 btn w-32 font-bold btn-primary">Start Task</div>
-                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                <details class="dropdown">
+                    <summary class="mr-1 btn w-32 font-bold btn-primary">Start Task</summary>
+                    <ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
                         <li @click="handleStartTime(null)">
                             <a class="flex justify-between items-center p-2">
                                 <div>
@@ -576,16 +576,16 @@ function handleFormatTimeRange(time) {
                             </a>
                         </li>
                     </ul>
-                </div>
+                </details>
                 <div class="h-full border-l mx-6 start-stop-button-divider"></div>
-                <div class="dropdown">
-                    <div tabindex="0" role="button" class="m-1 btn w-32 font-bold btn-primary">End Task</div>
+                <details class="dropdown">
+                    <summary class="m-1 btn w-32 font-bold btn-primary">End Task</summary>
                     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
                         <li v-for="time in onGoingTimes" :key="time.docID" @click="handleEndTime(time)">
                             <a>{{ time.groupName }}</a>
                         </li>
                     </ul>
-                </div>
+                </details>
             </div>
         </div>
 
