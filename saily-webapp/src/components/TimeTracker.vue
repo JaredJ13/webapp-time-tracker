@@ -507,12 +507,12 @@ function handleFormatTimeRange(time) {
 </script>
 
 <template>
-    <div class="font-robotoCondensed mt-8">
+    <div class="font-robotoCondensed mt-4 md:mt-12">
         <!-- start and stop buttons -->
-        <div>
+        <div class="mb-10 mx-auto">
             <div class="flex justify-center items-center h-12">
                 <div class="dropdown">
-                    <div tabindex="0" role="button" class="m-1 btn w-40 font-bold btn-primary">Start Task</div>
+                    <div tabindex="0" role="button" class="mr-1 btn w-32 font-bold btn-primary">Start Task</div>
                     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
                         <li @click="handleStartTime(null)">
                             <a class="flex justify-between items-center p-2">
@@ -539,7 +539,7 @@ function handleFormatTimeRange(time) {
                 </div>
                 <div class="h-full border-l mx-6 start-stop-button-divider"></div>
                 <div class="dropdown">
-                    <div tabindex="0" role="button" class="m-1 btn w-40 font-bold btn-primary">End Task</div>
+                    <div tabindex="0" role="button" class="m-1 btn w-32 font-bold btn-primary">End Task</div>
                     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
                         <li v-for="time in onGoingTimes" :key="time.docID" @click="handleEndTime(time)">
                             <a>{{ time.groupName }}</a>
@@ -550,16 +550,16 @@ function handleFormatTimeRange(time) {
         </div>
 
         <!-- daily task timeline -->
-        <div class="px-40 pt-10">
+        <div class="md:px-40 pt-10">
             <ul v-if="mainStore.allTimes.length > 0"
-                class="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
+                class="timeline timeline-snap-icon max-sm:timeline-compact timeline-vertical w-11/12 mx-auto">
                 <li v-for="(time, index) in mainStore.allTimes" :key="time.docID">
-                    <div class="timeline-middle">
+                    <div class="timeline-middle mx-2">
                         <PencilIcon @click="handleSwitchToEditTime(time)"
                             class="w-4 h-4 hover:text-secondary hover:cursor-pointer transition" />
                     </div>
                     <div
-                        :class="`${index % 2 ? 'timeline-end ml-8' : 'timeline-start md:text-start'} mb-3 sm:text-sm md:text-md lg:text-lg ${!time.editTime ? 'w-40 md:w-60' : 'w-60 md:w-72'}`">
+                        :class="`task-timeline ${index % 2 ? 'timeline-end' : 'timeline-start md:text-start'} mb-10 sm:text-sm md:text-md lg:text-md ${!time.editTime ? 'w-12/12' : 'w-12/12'} sm:bg-base-200 sm:rounded-md sm:w-72 md:w-80 lg:w-96 p-2`">
                         <time v-if="!time.editTime" class="italic">{{
                             moment(time.startTime).format('LT') }} to {{
                                 time.endTime ?
@@ -634,7 +634,7 @@ function handleFormatTimeRange(time) {
                         <ul>
                             <li v-for="group in inactiveGroups" :key="group.docID" class="flex items-center">{{
                                 group.name
-                            }}
+                                }}
                                 <PlusCircleIcon
                                     class="w-5 h-5 ml-1 hover:text-primary hover:cursor-pointer hover:transition" />
                             </li>

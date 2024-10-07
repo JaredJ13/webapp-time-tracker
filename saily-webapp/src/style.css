@@ -34,5 +34,21 @@
     font-weight: bold !important;
 }
 
+@media (max-width: 768px) {
+  .theme-and-date-select-div{
+    display: none;
+  }
+  .theme-and-date-select-div-small-viewports{
+    display: flex;
+  }
+}
 
+@media(min-width: 768px){
+  .theme-and-date-select-div{
+    display: block;
+  }
+  .theme-and-date-select-div-small-viewports{
+    display: none;
+  }
+}
 
