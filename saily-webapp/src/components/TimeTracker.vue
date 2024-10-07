@@ -281,6 +281,10 @@ async function handleStartTime(groupDocID) {
                     docID: timeDocID
                 }
             )
+            // manually close start task dropdown
+            const dropdown = document.getElementById('startTaskDropdown');
+            dropdown.removeAttribute('open');
+
             SuccessToast(`${groupName ? `New task started for ${groupName}` : `New general task started`}`);
         }
         catch (err) {
@@ -328,6 +332,10 @@ async function handleEndTime(time) {
         }
 
         mainStore.allTimes = allTimesCopy;
+
+        // manually close end task dropdown
+        const dropdown = document.getElementById('endTaskDropdown');
+        dropdown.removeAttribute('open');
 
         SuccessToast(`Task ended for ${time.groupName}`);
     }
@@ -551,7 +559,7 @@ function handleFormatTimeRange(time) {
         <!-- start and stop buttons -->
         <div class="mb-10 mx-auto">
             <div class="flex justify-center items-center h-12">
-                <details class="dropdown">
+                <details class="dropdown" id="startTaskDropdown">
                     <summary class="mr-1 btn w-32 font-bold btn-primary">Start Task</summary>
                     <ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
                         <li @click="handleStartTime(null)">
@@ -578,7 +586,7 @@ function handleFormatTimeRange(time) {
                     </ul>
                 </details>
                 <div class="h-full border-l mx-6 start-stop-button-divider"></div>
-                <details class="dropdown">
+                <details class="dropdown" id="endTaskDropdown">
                     <summary class="m-1 btn w-32 font-bold btn-primary">End Task</summary>
                     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
                         <li v-for="time in onGoingTimes" :key="time.docID" @click="handleEndTime(time)">
