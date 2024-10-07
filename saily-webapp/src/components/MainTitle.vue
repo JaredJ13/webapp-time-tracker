@@ -161,7 +161,9 @@ async function handleSignOut() {
             <h1 class="font-lobster text-5xl">Saily</h1>
             <p class="font-robotoCondensed italic mt-2">Track and Summarize your Daily Tasks</p>
         </div>
-        <ArrowLeftEndOnRectangleIcon class="absolute right-10 top-5 cursor-pointer w-5 h-5" @click="handleSignOut()" />
+        <ArrowLeftEndOnRectangleIcon
+            class="absolute right-10 top-5 cursor-pointer w-5 h-5 hover:text-error hover:cursor-pointer transition"
+            @click="handleSignOut()" />
 
         <div
             class="theme-and-date-select-div-small-viewports cursor-pointer w-12/12 flex-col items-center justify-center mt-6">

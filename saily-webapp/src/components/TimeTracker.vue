@@ -499,7 +499,6 @@ function handleSwitchToEditTime(time) {
     if (time.editTime) {
         // check if another time is in edit mode, if so set it to false
         const editModeTimeIndex = mainStore.allTimes.findIndex((x) => x.editTime === true && x.docID !== time.docID);
-        console.log(editModeTimeIndex)
         if (editModeTimeIndex !== -1) {
             mainStore.allTimes[editModeTimeIndex].editTime = false;
         }
