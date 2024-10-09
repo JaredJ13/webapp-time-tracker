@@ -131,6 +131,43 @@ export async function readAllTimes(uid, currentDay) {
     return times;
 }
 
+export async function readTimesForSpecificRange(uid, startDate, endDate) {
+    // Extract year, month, and day from the start date
+    const startYear = startDate.getFullYear();
+    const startMonth = startDate.getMonth() + 1;
+    const startDay = startDate.getDate();
+
+    // Extract year, month, and day from the end date
+    const endYear = endDate.getFullYear();
+    const endMonth = endDate.getMonth() + 1;
+    const endDay = endDate.getDate();
+
+    // Query for tasks that fall within the selected date range
+    const q = query(
+        collection(db, "tasks"),
+        where("uid", "==", uid),
+        where("startYear", ">=", startYear),
+        where("startMonth", ">=", startMonth),
+        where("startDay", ">=", startDay),
+        where("startYear", "<=", endYear),
+        where("startMonth", "<=", endMonth),
+        where("startDay", "<=", endDay),
+        orderBy("startTime")
+    );
+
+    const querySnapshot = await getDocs(q);
+    let times = [];
+    querySnapshot.forEach((doc) => {
+        let timeData = doc.data();
+        timeData['docID'] = doc.id;
+        timeData['startTime'] = doc.data().startTime ? doc.data().startTime.toDate() : null;
+        timeData['endTime'] = doc.data().endTime ? doc.data().endTime.toDate() : null;
+        times.push(timeData);
+    });
+    return times;
+}
+
+
 export async function deleteTime(docID) {
     let deactivateRef = await deleteDoc(doc(db, `tasks/${docID}`));
 

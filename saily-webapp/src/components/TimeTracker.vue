@@ -63,170 +63,6 @@ const onGoingTimes = computed(() => {
     return onGoingTimes;
 });
 
-const totalHours = computed(() => {
-    let total = 0;
-
-    mainStore.allTimes.forEach((time) => {
-        const { startTime, endTime } = time;
-
-        if (startTime && endTime) {
-            const start = new Date(startTime);
-            const end = new Date(endTime);
-
-            // Calculate the difference in milliseconds
-            const diff = end - start;
-
-            // Convert milliseconds to hours
-            const hours = diff / (1000 * 60 * 60);
-
-            // Add to the total
-            total += hours;
-        } else if (startTime && !endTime) {
-            const start = new Date(startTime);
-            const selectedDate = mainStore.selectedDate;
-            const currentDate = new Date();
-            const now = new Date(
-                selectedDate.getFullYear(),
-                selectedDate.getMonth(),
-                selectedDate.getDate(),
-                currentDate.getHours(),
-                currentDate.getMinutes(),
-                currentDate.getSeconds()
-            );
-
-            // Calculate the difference in milliseconds
-            const diff = now - start;
-
-            // Convert milliseconds to hours
-            const hours = diff / (1000 * 60 * 60);
-
-            // Add to the total
-            total += hours;
-        }
-    });
-    // Return the total rounded to two decimal places
-    return total.toFixed(2);
-});
-
-const groupTotals = computed(() => {
-    let totals = [];
-
-    let allTimesCopy = lodash.cloneDeep(mainStore.allTimes);
-
-    // get General group totals
-    let generalGroupTimes = allTimesCopy.filter((x) => x.groupDocID === null);
-    let generalGroupTotals = { totalTasks: 0, totalHours: 0, hours: 0, minutes: 0, name: 'General', description: '' };
-
-    generalGroupTimes.forEach((time) => {
-        if (time.description.trim() !== '') {
-            generalGroupTotals.description += `- ${time.description}\n`;
-        }
-
-        generalGroupTotals.totalTasks += 1;
-
-        const { startTime, endTime } = time;
-
-        if (startTime && endTime) {
-            const start = new Date(startTime);
-            const end = new Date(endTime);
-
-            // Calculate the difference in milliseconds
-            const diff = end - start;
-
-            // Convert milliseconds to hours
-            const hours = diff / (1000 * 60 * 60);
-
-            // Add to the total
-            generalGroupTotals.totalHours += hours;
-        } else if (startTime && !endTime) {
-            const start = new Date(startTime);
-            const selectedDate = mainStore.selectedDate;
-            const currentDate = new Date();
-            const now = new Date(
-                selectedDate.getFullYear(),
-                selectedDate.getMonth(),
-                selectedDate.getDate(),
-                currentDate.getHours(),
-                currentDate.getMinutes(),
-                currentDate.getSeconds()
-            );
-
-            // Calculate the difference in milliseconds
-            const diff = now - start;
-
-            // Convert milliseconds to hours
-            const hours = diff / (1000 * 60 * 60);
-
-            // Add to the total
-            generalGroupTotals.totalHours += hours;
-        }
-    });
-
-    generalGroupTotals.hours = Math.floor(generalGroupTotals.totalHours);
-    generalGroupTotals.minutes = (generalGroupTotals.totalHours - generalGroupTotals.hours) * 60;
-
-    totals.push(generalGroupTotals);
-
-    state.allGroups.forEach((group) => {
-        let groupTimes = allTimesCopy.filter((x) => x.groupDocID === group.docID);
-        let groupTotals = { totalTasks: 0, totalHours: 0, hours: 0, minutes: 0, name: '', description: '' };
-
-        groupTimes.forEach((time) => {
-            if (time.description.trim() !== '') {
-                groupTotals.description += `- ${time.description}\n`;
-            }
-            groupTotals.totalTasks += 1;
-
-            const { startTime, endTime } = time;
-
-            if (startTime && endTime) {
-                const start = new Date(startTime);
-                const end = new Date(endTime);
-
-                // Calculate the difference in milliseconds
-                const diff = end - start;
-
-                // Convert milliseconds to hours
-                const hours = diff / (1000 * 60 * 60);
-
-                // Add to the total
-                groupTotals.totalHours += hours;
-            } else if (startTime && !endTime) {
-                const start = new Date(startTime);
-                const selectedDate = mainStore.selectedDate;
-                const currentDate = new Date();
-                const now = new Date(
-                    selectedDate.getFullYear(),
-                    selectedDate.getMonth(),
-                    selectedDate.getDate(),
-                    currentDate.getHours(),
-                    currentDate.getMinutes(),
-                    currentDate.getSeconds()
-                );
-
-                // Calculate the difference in milliseconds
-                const diff = now - start;
-
-                // Convert milliseconds to hours
-                const hours = diff / (1000 * 60 * 60);
-
-                // Add to the total
-                groupTotals.totalHours += hours;
-            }
-        });
-
-        groupTotals.hours = Math.floor(groupTotals.totalHours);
-        groupTotals.minutes = (groupTotals.totalHours - groupTotals.hours) * 60;
-        groupTotals.name = getGroupName(group.docID);
-
-        if (groupTotals.totalTasks !== 0) {
-            totals.push(groupTotals);
-        }
-    });
-
-    return totals
-});
-
 onMounted(async () => {
     // get all the times for the logged in user for today
     try {
@@ -569,7 +405,7 @@ function handleFormatTimeRange(time) {
                                 </div>
                             </a>
                         </li>
-                        <li @click="handleStartTime(group.docID)" v-for="group in state.allGroups" :key="group.docID">
+                        <li @click="handleStartTime(group.docID)" v-for="group in activeGroups" :key="group.docID">
                             <a class="flex justify-between items-center p-2">
                                 <div>
                                     {{ group.name }}
@@ -698,7 +534,7 @@ function handleFormatTimeRange(time) {
 
         <!-- tasks summary -->
         <div>
-            <Summary :totalHours="totalHours" :totalTasks="mainStore.allTimes.length" :groupTotals="groupTotals" />
+            <Summary :allGroups="state.allGroups" />
         </div>
     </div>
 </template>
