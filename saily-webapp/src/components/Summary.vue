@@ -238,7 +238,7 @@ function getGroupName(groupDocID) {
         <h2 class="font-bold text-center text-xl md:text-2xl ">Task Summary</h2>
 
         <!-- date picker -->
-        <div class="w-2/12 mx-auto mt-5">
+        <div class="w-6/12 md:w-4/12 lg:w-3/12 xl:w-2/12 mx-auto mt-5">
             <p class="text-xs">Summarize tasks for:</p>
             <VueDatePicker v-model="state.summaryDateRange" :is-24="false" range :enable-time-picker="false"
                 :clearable="false" :format="(date) => datePickerFormat(date)" />
