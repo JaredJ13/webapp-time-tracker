@@ -284,10 +284,10 @@ async function refreshSummary() {
             </button>
         </div>
 
-        <div class="divider px-80 mt-10 text-lg text-accent">Summary for {{ summaryText }}</div>
+        <p class="mt-10 text-lg text-accent text-center font-bold italic">Summary for {{ summaryText }}</p>
 
         <!-- Total Stats -->
-        <h3 class="text-center text-lg font-bold mt-8">All Tasks</h3>
+        <h3 class="text-center text-lg font-bold mt-3">All Tasks</h3>
         <div class="flex justify-center items-center">
             <div class="stats sm:stats-horizontal bg-base-200 shadow bg-default">
                 <div class="stat">
