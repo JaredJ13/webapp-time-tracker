@@ -18,9 +18,10 @@ const state = reactive({
 });
 
 // on mount
-onMounted(() => {
+onMounted(async () => {
     state.timesToSummarize = mainStore.allTimes;
     state.formattedTotalHours = '0hrs 0mins';
+    state.timesToSummarize = await readTimesForSpecificRange(mainStore.uid, new Date(), new Date());
 });
 
 // computed
@@ -197,18 +198,40 @@ const groupTotals = computed(() => {
     return totals
 });
 
+const summaryText = computed(() => {
+    const dateRange = state.summaryDateRange;
+
+    // case when only the first date is selected
+    if (dateRange[0] && !dateRange[1]) {
+        return moment(dateRange[0]).format('ll');
+    }
+
+    // case when only the second date is selected
+    if (dateRange[1] && !dateRange[0]) {
+        return moment(dateRange[1]).format('ll');
+    }
+
+    // case when both dates are selected and they are not the same day or year
+    if (dateRange[0] && dateRange[1] &&
+        (!moment(dateRange[0]).isSame(dateRange[1], 'day') ||
+            !moment(dateRange[0]).isSame(dateRange[1], 'year'))) {
+        return moment(dateRange[0]).format('ll') + ' to ' + moment(dateRange[1]).format('ll');
+    }
+
+    // fallback case if both dates are the same
+    return moment(dateRange[0] || dateRange[1]).format('ll');
+});
+
 watch(() => state.summaryDateRange, async (newRange, oldRange) => {
-
     // query for tasks from selected calendar date if date selector is changed
-    const currentDay = new Date().getDate();
-    const currentYear = new Date().getFullYear();
-
-    if (newRange !== oldRange) {
-        if (newRange[0] && newRange[1]) {
-            if ((newRange[0].getDate() !== currentDay || newRange[0].getFullYear() !== currentYear || newRange[1].getDate() !== currentDay || newRange[1].getFullYear() !== currentYear) || ((newRange[0].getDate() === currentDay || newRange[0].getFullYear() === currentYear || newRange[1].getDate() === currentDay || newRange[1].getFullYear() === currentYear) && (oldRange[0].getDate() !== currentDay || oldRange[0].getFullYear() !== currentYear || oldRange[1].getDate() !== currentDay || oldRange[1].getFullYear() !== currentYear))) {
-                state.timesToSummarize = await readTimesForSpecificRange(mainStore.uid, newRange[0], newRange[1]);
-            }
-        }
+    if (newRange[0] && newRange[1]) {
+        state.timesToSummarize = await readTimesForSpecificRange(mainStore.uid, newRange[0], newRange[1]);
+    }
+    else if (newRange[0] && !newRange[1]) {
+        state.timesToSummarize = await readTimesForSpecificRange(mainStore.uid, newRange[0], newRange[0]);
+    }
+    else if (!newRange[0] && newRange[1]) {
+        state.timesToSummarize = await readTimesForSpecificRange(mainStore.uid, newRange[1], newRange[1]);
     }
 });
 
@@ -231,6 +254,18 @@ function getGroupName(groupDocID) {
     return groupName ? groupName : 'General';
 }
 
+async function refreshSummary() {
+    if (state.summaryDateRange[0] && state.summaryDateRange[1]) {
+        state.timesToSummarize = await readTimesForSpecificRange(mainStore.uid, state.summaryDateRange[0], state.summaryDateRange[1]);
+    }
+    else if (state.summaryDateRange[0] && !state.summaryDateRange[1]) {
+        state.timesToSummarize = await readTimesForSpecificRange(mainStore.uid, state.summaryDateRange[0], state.summaryDateRange[0]);
+    }
+    else if (!state.summaryDateRange[0] && state.summaryDateRange[1]) {
+        state.timesToSummarize = await readTimesForSpecificRange(mainStore.uid, state.summaryDateRange[1], state.summaryDateRange[1]);
+    }
+}
+
 </script>
 
 <template>
@@ -238,11 +273,18 @@ function getGroupName(groupDocID) {
         <h2 class="font-bold text-center text-xl md:text-2xl ">Task Summary</h2>
 
         <!-- date picker -->
-        <div class="w-6/12 md:w-4/12 lg:w-3/12 xl:w-2/12 mx-auto mt-5">
+        <div class="w-7/12 md:w-4/12 lg:w-3/12 xl:w-2/12 mx-auto mt-5">
             <p class="text-xs">Summarize tasks for:</p>
             <VueDatePicker v-model="state.summaryDateRange" :is-24="false" range :enable-time-picker="false"
                 :clearable="false" :format="(date) => datePickerFormat(date)" />
         </div>
+        <div class="w-40 mx-auto mt-2">
+            <button class="btn btn-primary text-sm w-full" @click="refreshSummary()">
+                Refresh Summary
+            </button>
+        </div>
+
+        <div class="divider px-80 mt-10 text-lg text-accent">Summary for {{ summaryText }}</div>
 
         <!-- Total Stats -->
         <h3 class="text-center text-lg font-bold mt-8">All Tasks</h3>

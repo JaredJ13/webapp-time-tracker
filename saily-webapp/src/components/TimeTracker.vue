@@ -433,8 +433,10 @@ function handleFormatTimeRange(time) {
             </div>
         </div>
 
+        <div class="divider px-10">Tasks for {{moment(mainStore.selectedDate).format('ll')}}</div>
+
         <!-- daily task timeline -->
-        <div class="md:px-40 pt-10">
+        <div class="md:px-40 pt-3">
             <ul v-if="mainStore.allTimes.length > 0"
                 class="timeline timeline-snap-icon max-sm:timeline-compact timeline-vertical w-11/12 mx-auto">
                 <li v-for="(time, index) in mainStore.allTimes" :key="time.docID">
