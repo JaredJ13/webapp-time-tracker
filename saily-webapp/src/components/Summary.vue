@@ -269,27 +269,26 @@ async function refreshSummary() {
 </script>
 
 <template>
-    <div class="font-robotoCondensed mb-6">
-        <h2 class="font-bold text-center text-xl md:text-2xl ">Task Summary</h2>
-
+    <div class="font-robotoCondensed mb-4 mt-0 md:mt-10">
         <!-- date picker -->
         <div class="w-7/12 md:w-4/12 lg:w-3/12 xl:w-2/12 mx-auto mt-5">
             <p class="text-xs">Summarize tasks for:</p>
             <VueDatePicker v-model="state.summaryDateRange" :is-24="false" range :enable-time-picker="false"
                 :clearable="false" :format="(date) => datePickerFormat(date)" />
         </div>
-        <div class="w-40 mx-auto mt-2">
+        <div class="w-40 mx-auto mt-3">
             <button class="btn btn-primary text-sm w-full" @click="refreshSummary()">
                 Refresh Summary
             </button>
         </div>
 
-        <p class="mt-10 text-lg text-accent text-center font-bold italic">Summary for {{ summaryText }}</p>
+        <div class="divider mt-16 px-10">Summary for {{ summaryText }}</div>
+
 
         <!-- Total Stats -->
-        <h3 class="text-center text-lg font-bold mt-3">All Tasks</h3>
+        <h3 class="text-center text-lg font-bold mt-6">All Tasks</h3>
         <div class="flex justify-center items-center">
-            <div class="stats sm:stats-horizontal bg-base-200 shadow bg-default">
+            <div class="stats sm:stats-horizontal bg-base-200 shadow-lg bg-default">
                 <div class="stat">
                     <div class="text-center">Total Tasks</div>
                     <div class="stat-value text-center text-accent">{{ state.timesToSummarize.length }}</div>
@@ -303,7 +302,35 @@ async function refreshSummary() {
             </div>
         </div>
         <!--  Group Stats -->
-        <div class="w-11/12 md:w-7/12 lg:w-4/12 xl:w-5/12 mx-auto mb-10">
+        <div class="table-stats-view card bg-base-200 w-11/12 lg:w-9/12 xl:w-8/12 mx-auto mt-4 mb-20 shadow-xl">
+            <div class="card-body">
+                <div class="overflow-x-auto w-11/12 mx-auto mt-4 mb-20">
+                    <table class="table">
+                        <thead>
+                            <tr class="border-b-2  border-accent">
+                                <th></th>
+                                <th class="text-lg">Time Group</th>
+                                <th class="text-lg">Total Tasks</th>
+                                <th class="text-lg">Total Hours</th>
+                                <th class="text-lg">Description <span class="italic">(Click cell to copy)</span></th>
+                            </tr>
+                        </thead>
+                        <tbody v-for="(total, index) in groupTotals" :key="index">
+                            <th class="border-b-2 border-accent">{{ index + 1 }}</th>
+                            <td class="border-b-2 border-accent">{{ total.name }}</td>
+                            <td class="border-b-2 border-accent">{{ total.totalTasks }}</td>
+                            <td class="border-b-2 border-accent">{{ total.totalHours.toFixed(2) }}</td>
+                            <td class="border-b-2 border-accent w-5/12 whitespace-pre-wrap text-left hover:cursor-pointer hover:text-success transition"
+                                @click="handleCopyToClipboard(total.description)">{{
+                                    total.description }}
+                            </td>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-stats-view w-11/12 md:w-7/12 lg:w-4/12 xl:w-5/12 mx-auto mb-10">
             <div v-for="(total, index) in groupTotals" :key="index">
                 <h3 class="text-center text-lg font-bold mt-8 ">{{ total.name }}</h3>
                 <div class="flex justify-center items-center">

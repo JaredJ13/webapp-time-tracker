@@ -67,7 +67,9 @@ onMounted(async () => {
     // get all the times for the logged in user for today
     try {
         mainStore.allTimes = await readAllTimes(localStorage.uid, mainStore.selectedDate);
-        state.allGroups = await readAllGroups(localStorage.uid);
+        const allGroups = await readAllGroups(localStorage.uid);
+        state.allGroups = allGroups;
+        mainStore.allGroups = allGroups;
     }
     catch (err) {
         console.log(err);
@@ -433,10 +435,10 @@ function handleFormatTimeRange(time) {
             </div>
         </div>
 
-        <div class="divider px-10">Tasks for {{moment(mainStore.selectedDate).format('ll')}}</div>
+        <div class="divider px-10">Tasks for {{ moment(mainStore.selectedDate).format('ll') }}</div>
 
         <!-- daily task timeline -->
-        <div class="md:px-40 pt-3">
+        <div class="md:px-40 pt-3 mb-10">
             <ul v-if="mainStore.allTimes.length > 0"
                 class="timeline timeline-snap-icon max-sm:timeline-compact timeline-vertical w-11/12 mx-auto">
                 <li v-for="(time, index) in mainStore.allTimes" :key="time.docID">
@@ -445,7 +447,7 @@ function handleFormatTimeRange(time) {
                             class="w-4 h-4 hover:text-secondary hover:cursor-pointer transition" />
                     </div>
                     <div
-                        :class="`task-timeline ${index % 2 ? 'timeline-end' : 'timeline-start md:text-start'} max-sm:my-8 sm:mb-10 sm:text-sm md:text-md lg:text-md ${!time.editTime ? 'w-12/12' : 'w-12/12'} bg-base-200 rounded-md w-full sm:w-72 md:w-80 lg:w-96 p-2`">
+                        :class="`task-timeline ${index % 2 ? 'timeline-end' : 'timeline-start md:text-start'} max-sm:my-8 sm:mb-10 sm:text-sm md:text-md lg:text-md ${!time.editTime ? 'w-12/12' : 'w-12/12'} bg-base-200 rounded-md shadow-md w-full sm:w-72 md:w-80 lg:w-96 p-2`">
                         <time v-if="!time.editTime" class="italic">{{
                             moment(time.startTime).format('LT') }} to {{
                                 time.endTime ?
@@ -482,7 +484,7 @@ function handleFormatTimeRange(time) {
                 </li>
             </ul>
         </div>
-        <div class="divider my-5 px-10"></div>
+        <!-- <div class="divider my-5 px-10"></div> -->
 
         <!-- manage groups modal -->
         <dialog id="modal_manageGroups" class="modal">
@@ -533,11 +535,6 @@ function handleFormatTimeRange(time) {
                 <button>close</button>
             </form>
         </dialog>
-
-        <!-- tasks summary -->
-        <div>
-            <Summary :allGroups="state.allGroups" />
-        </div>
     </div>
 </template>
 

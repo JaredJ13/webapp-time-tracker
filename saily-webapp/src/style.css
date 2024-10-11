@@ -52,3 +52,21 @@
   }
 }
 
+@media (max-width: 860px) {
+  .table-stats-view{
+    display: none;
+  }
+  .card-stats-view{
+    display: block;
+  }
+}
+
+@media(min-width: 860px){
+  .table-stats-view{
+    display: block;
+  }
+  .card-stats-view{
+    display: none;
+  }
+}
+

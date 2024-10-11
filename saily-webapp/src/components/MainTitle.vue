@@ -117,45 +117,49 @@ async function handleSignOut() {
 <template>
     <div class="mt-8 relative">
         <div class="theme-and-date-select-div absolute left-10 top-0 cursor-pointer h-5 w-1/6">
-            <p class="text-xs">Theme:</p>
-            <select v-model="appTheme" class="select select-bordered select-sm w-full max-w-xs mb-2">
-                <option disabled selected>Theme</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-                <option value="dim">Dim</option>
-                <option value="cupcake">Cupcake</option>
-                <option value="bumblebee">Bumblebee</option>
-                <option value="emerald">Emerald</option>
-                <option value="corporate">Corporate</option>
-                <option value="synthwave">Synthwave</option>
-                <option value="retro">Retro</option>
-                <option value="cyberpunk">Cyberpunk</option>
-                <option value="valentine">Valentine</option>
-                <option value="halloween">Halloween</option>
-                <option value="garden">Garden</option>
-                <option value="forest">Forest</option>
-                <option value="aqua">Aqua</option>
-                <option value="lofi">Lofi</option>
-                <option value="pastel">Pastel</option>
-                <option value="fantasy">Fantasy</option>
-                <option value="wireframe">Wireframe</option>
-                <option value="black">Black</option>
-                <option value="luxury">Luxury</option>
-                <option value="dracula">Dracula</option>
-                <option value="cmyk">CMYK</option>
-                <option value="autumn">Autumn</option>
-                <option value="business">Business</option>
-                <option value="acid">Acid</option>
-                <option value="lemonade">Lemonade</option>
-                <option value="night">Night</option>
-                <option value="coffee">Coffee</option>
-                <option value="winter">Winter</option>
-                <option value="nord">Nord</option>
-                <option value="sunset">Sunset</option>
-            </select>
-            <p class="text-xs">Track tasks for:</p>
-            <VueDatePicker class="bg-primary text-primary" v-model="selectedDayForTasks" :is-24="false"
-                :enable-time-picker="false" :clearable="false" :format="datePickerFormat" light />
+            <div v-if="mainStore.pageSelected === 'home'">
+                <p class="text-xs">Theme:</p>
+                <select v-model="appTheme" class="select select-bordered select-sm w-full max-w-xs mb-2">
+                    <option disabled selected>Theme</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="dim">Dim</option>
+                    <option value="cupcake">Cupcake</option>
+                    <option value="bumblebee">Bumblebee</option>
+                    <option value="emerald">Emerald</option>
+                    <option value="corporate">Corporate</option>
+                    <option value="synthwave">Synthwave</option>
+                    <option value="retro">Retro</option>
+                    <option value="cyberpunk">Cyberpunk</option>
+                    <option value="valentine">Valentine</option>
+                    <option value="halloween">Halloween</option>
+                    <option value="garden">Garden</option>
+                    <option value="forest">Forest</option>
+                    <option value="aqua">Aqua</option>
+                    <option value="lofi">Lofi</option>
+                    <option value="pastel">Pastel</option>
+                    <option value="fantasy">Fantasy</option>
+                    <option value="wireframe">Wireframe</option>
+                    <option value="black">Black</option>
+                    <option value="luxury">Luxury</option>
+                    <option value="dracula">Dracula</option>
+                    <option value="cmyk">CMYK</option>
+                    <option value="autumn">Autumn</option>
+                    <option value="business">Business</option>
+                    <option value="acid">Acid</option>
+                    <option value="lemonade">Lemonade</option>
+                    <option value="night">Night</option>
+                    <option value="coffee">Coffee</option>
+                    <option value="winter">Winter</option>
+                    <option value="nord">Nord</option>
+                    <option value="sunset">Sunset</option>
+                </select>
+            </div>
+            <div v-if="mainStore.pageSelected === 'home'">
+                <p class="text-xs">Track tasks for:</p>
+                <VueDatePicker class="bg-primary text-primary" v-model="selectedDayForTasks" :is-24="false"
+                    :enable-time-picker="false" :clearable="false" :format="datePickerFormat" light />
+            </div>
         </div>
         <div class="text-center">
             <h1 class="font-lobster text-5xl">Saily</h1>
@@ -166,8 +170,8 @@ async function handleSignOut() {
             @click="handleSignOut()" />
 
         <div
-            class="theme-and-date-select-div-small-viewports cursor-pointer w-12/12 flex-col items-center justify-center mt-6">
-            <div class="w-40 mb-2">
+            class="theme-and-date-select-div-small-viewports cursor-pointer w-12/12 flex-col items-center justify-center mt-4">
+            <div v-if="mainStore.pageSelected === 'home'" class="w-40 mb-2">
                 <select v-model="appTheme" class="select select-bordered select-sm w-full max-w-xs">
                     <option disabled selected>Theme</option>
                     <option value=" light">Light</option>
@@ -204,7 +208,7 @@ async function handleSignOut() {
                     <option value="sunset">Sunset</option>
                 </select>
             </div>
-            <div class="w-40">
+            <div v-if="mainStore.pageSelected === 'home'" class="w-40">
                 <!-- <p class="text-xs">Track tasks for:</p> -->
                 <VueDatePicker class="bg-primary text-primary" v-model="selectedDayForTasks" :is-24="false"
                     :enable-time-picker="false" :clearable="false" :format="datePickerFormat" light />

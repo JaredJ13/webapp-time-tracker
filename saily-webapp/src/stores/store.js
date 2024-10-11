@@ -7,6 +7,8 @@ export const useMainStore = defineStore('mainStore', () => {
     const allTimes = ref([]);
     const userSettings = ref(null);
     const uid = ref(null);
+    const allGroups = ref([]);
+    const pageSelected = ref('home');
 
-    return { selectedDate, allTimes, userSettings, uid };
+    return { selectedDate, allTimes, userSettings, uid, allGroups, pageSelected };
 })
