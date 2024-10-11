@@ -61,7 +61,7 @@ function handlePageSelect(page) {
       <ul
         class="menu bg-base-200 rounded-box w-32 md:w-16 md:h-24 fixed z-50 bottom-1 left-1/2 transform -translate-x-1/2 md:left-4 md:top-1/2 md:transform md:-translate-y-1/2 menu-horizontal md:menu-vertical">
         <li @click="handlePageSelect('home')" :class="`${mainStore.pageSelected === 'home' ? 'disabled' : ''}`">
-          <a class="tooltip tooltip-bottom md:tooltip-right" data-tip="Task Tracker">
+          <a class="tooltip tooltip-top md:tooltip-right" data-tip="Task Tracker">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -70,7 +70,7 @@ function handlePageSelect(page) {
           </a>
         </li>
         <li @click="handlePageSelect('summary')" :class="`${mainStore.pageSelected === 'summary' ? 'disabled' : ''}`">
-          <a class="tooltip tooltip-bottom md:tooltip-right" data-tip="Task Summary">
+          <a class="tooltip tooltip-top md:tooltip-right" data-tip="Task Summary">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
