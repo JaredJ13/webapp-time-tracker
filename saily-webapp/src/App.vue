@@ -59,7 +59,7 @@ function handlePageSelect(page) {
   <div>
     <div v-if="mainStore.uid">
       <ul
-        class="menu bg-base-200 rounded-box w-16 h-24 fixed z-50 left-0 md:top-1/2 md:transform md:-translate-y-1/2 bottom-4">
+        class="menu bg-base-200 rounded-box w-16 h-24 fixed z-50 left-0 md:top-1/2 md:transform md:-translate-y-1/2 bottom-8">
         <li @click="handlePageSelect('home')" :class="`${mainStore.pageSelected === 'home' ? 'disabled' : ''}`">
           <a class="tooltip tooltip-right" data-tip="Task Tracker">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
