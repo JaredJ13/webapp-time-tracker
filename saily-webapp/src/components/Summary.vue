@@ -1,11 +1,12 @@
 <script setup>
-import { reactive, computed, onMounted, watch } from 'vue';
+import { reactive, computed, onMounted, watch, ref } from 'vue';
 import moment from 'moment';
 import lodash from 'lodash';
-import { ClipboardIcon } from '@heroicons/vue/20/solid';
+import { BoltIcon, QuestionMarkCircleIcon, QueueListIcon } from '@heroicons/vue/20/solid';
 import { SuccessToast } from './toasts/SuccessToast';
-import { readTimesForSpecificRange } from '../firebase/crudFunctions';
+import { readAllAiSummaries, readTimesForSpecificRange, writeNewAiSummary } from '../firebase/crudFunctions';
 import { useMainStore } from '../stores/store';
+import { ErrorToast } from './toasts/ErrorToast';
 
 const mainStore = useMainStore();
 
@@ -14,7 +15,11 @@ const props = defineProps(['allGroups']);
 
 const state = reactive({
     summaryDateRange: [new Date(), new Date()],
-    timesToSummarize: []
+    timesToSummarize: [],
+    summary: '',
+    error: '',
+    usersSavedSummaries: [],
+    generateAiSummaryLoading: false
 });
 
 // on mount
@@ -22,6 +27,7 @@ onMounted(async () => {
     state.timesToSummarize = mainStore.allTimes;
     state.formattedTotalHours = '0hrs 0mins';
     state.timesToSummarize = await readTimesForSpecificRange(mainStore.uid, new Date(), new Date());
+    state.usersSavedSummaries = await readAllAiSummaries(localStorage.uid);
 });
 
 // computed
@@ -266,6 +272,68 @@ async function refreshSummary() {
     }
 }
 
+async function callSummarizeTasks() {
+    state.generateAiSummaryLoading = true;
+    state.error = '';
+    let tasks = [];
+
+    // go through computed groupTotals and make array of task groups including time spent on task group and num of tasks
+    groupTotals.value.forEach((group) => {
+        let groupTaskString = `(Task Group: ${group.name}, Num of Tasks: ${group.totalTasks}, time spent on group tasks: ${group.hours.toFixed(2)}hrs ${group.minutes.toFixed(2)}mins, tasks: ${group.description})`;
+
+        tasks.push(groupTaskString);
+    });
+
+    try {
+        console.log("Tasks to be sent:", tasks);
+
+        const response = await fetch('https://summarizetasks-ihya7p3uuq-uc.a.run.app/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tasks: tasks }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error: ${response.status} - ${response.statusText}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        state.summary = data.summary;
+        console.log(state.summary);
+        SuccessToast(`AI summary generated`);
+
+        // write ai summary to db and add to local data
+        try {
+            const newGroupDocID = await writeNewAiSummary(localStorage.uid, state.summary, state.summaryDateRange[0], state.summaryDateRange[1], summaryText.value);
+            state.usersSavedSummaries.unshift(
+                {
+                    uid: localStorage.uid,
+                    summary: state.summary,
+                    createdDate: new Date(),
+                    docID: newGroupDocID,
+                    startDate: state.summaryDateRange[0],
+                    endDate: state.summaryDateRange[1],
+                    summaryDateRange: summaryText.value
+                }
+            )
+            SuccessToast(`AI summary has been saved to your account`);
+        }
+        catch (err) {
+            console.log(err);
+            ErrorToast('An error occurred while trying to save the AI summary to your account');
+        }
+    } catch (err) {
+        console.error("Error calling AI summary function: ", err);
+        ErrorToast("Error calling AI summary function: ", err);
+        state.error = err.message;
+    } finally {
+        state.generateAiSummaryLoading = false;
+    }
+};
+
 </script>
 
 <template>
@@ -302,7 +370,21 @@ async function refreshSummary() {
             </div>
         </div>
         <!--  Group Stats -->
-        <div class="table-stats-view card bg-base-200 w-11/12 lg:w-9/12 xl:w-8/12 mx-auto mt-4 mb-20 shadow-xl">
+        <div class="table-stats-view card bg-base-200 w-11/12 lg:w-10/12 xl:w-9/12 mx-auto mt-4 mb-20 shadow-xl">
+            <div class="flex justify-end items-center pt-8 pr-20">
+                <button onclick="savedSummaries_modal.showModal()" class="btn btn-outline btn-sm btn-primary mr-2">View
+                    My AI
+                    Summaries
+                    <QueueListIcon class="w-4 h-4 mx-auto" />
+                </button>
+                <button @click="callSummarizeTasks()" class="btn btn-outline btn-sm btn-primary">Generate AI Summary
+                    <BoltIcon :class="{ 'animate-spin': state.generateAiSummaryLoading }" class="w-4 h-4 mx-auto" />
+                </button>
+                <div class="tooltip tooltip-left ml-3"
+                    data-tip="This will create an AI-generated summary of all the tasks in the table. It will remove repeated items and emphasize creating a concise, professional summary with a focus on key achievements throughout the time period. Your summary will be saved to the 'My AI Summaries' tab. This won't affect any of the tasks/times in the table below.">
+                    <QuestionMarkCircleIcon class="w-5 h-5" />
+                </div>
+            </div>
             <div class="card-body">
                 <div class="overflow-x-auto w-11/12 mx-auto mt-4 mb-20">
                     <table class="table">
@@ -313,6 +395,7 @@ async function refreshSummary() {
                                 <th class="text-lg">Total Tasks</th>
                                 <th class="text-lg">Total Hours</th>
                                 <th class="text-lg">Description <span class="italic">(Click cell to copy)</span></th>
+                                <!-- <th class="text-lg">AI Summary</th> -->
                             </tr>
                         </thead>
                         <tbody v-for="(total, index) in groupTotals" :key="index">
@@ -324,6 +407,9 @@ async function refreshSummary() {
                                 @click="handleCopyToClipboard(total.description)">{{
                                     total.description }}
                             </td>
+                            <!-- <td class="border-b-2 border-accent hover:cursor-pointer hover:text-success transition">
+                                <BoltIcon class="w-4 h-4 mx-auto" />
+                            </td> -->
                         </tbody>
                     </table>
                 </div>
@@ -361,6 +447,32 @@ async function refreshSummary() {
             </div>
         </div>
         <!--  /Group Stats -->
+
+        <!-- Saved Summaries Modal -->
+        <dialog id="savedSummaries_modal" class="modal">
+            <div class="modal-box">
+                <div v-if="state.usersSavedSummaries.length > 0">
+                    <h1 class="font-bold text-xl mb-4">Saved AI Summaries</h1>
+                    <div class="divider"></div>
+                    <div v-for="(summary, index) in state.usersSavedSummaries" :key="index"
+                        class="card bg-base-200 w-11/12 mx-auto shadow-xl mb-10">
+                        <div class="card-body">
+                            <h2 class="card-title">Summary for {{ summary.summaryDateRange }}</h2>
+                            <h3 class="text-md">Created {{ moment(summary.dateCreated).format('lll') }}</h3>
+                            <p class="text-sm">{{ summary.summary }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div v-else>
+                    <h1 class="font-bold text-xl">Saved AI Summaries</h1>
+                    <h2>You have no saved AI summaries</h2>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
+        <!-- /Saved Summaries Modal -->
 
     </div>
 </template>
