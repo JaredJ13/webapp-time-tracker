@@ -211,3 +211,31 @@ export async function editUserSettings(uid, theme) {
 
     return updateRef;
 }
+
+// ai summaries
+export async function writeNewAiSummary(uid, summary, startDate, endDate, summaryDateRange) {
+    const docRef = await addDoc(collection(db, 'aiSummaries'), {
+        uid: uid,
+        dateCreated: new Date(),
+        summary: summary,
+        startDate: startDate,
+        endDate: endDate,
+        summaryDateRange: summaryDateRange
+    })
+    return docRef.id;
+}
+
+export async function readAllAiSummaries(uid) {
+    const q = query(collection(db, "aiSummaries"), where("uid", "==", uid), orderBy("dateCreated", "desc"));
+    const querySnapshot = await getDocs(q)
+    let summaries = [];
+    querySnapshot.forEach((doc) => {
+        let summaryData = doc.data()
+        summaryData['docID'] = doc.id
+        summaryData['startDate'] = doc.data().startDate ? doc.data().startDate.toDate() : null;
+        summaryData['endDate'] = doc.data().endDate ? doc.data().endDate.toDate() : null;
+        summaryData['dateCreated'] = doc.data().dateCreated ? doc.data().dateCreated.toDate() : null;
+        summaries.push(summaryData)
+    });
+    return summaries;
+}
