@@ -348,6 +348,15 @@ async function callSummarizeTasks() {
             <button class="btn btn-primary text-sm w-full" @click="refreshSummary()">
                 Refresh Summary
             </button>
+            <button class="card-stats-view btn btn-outline btn-sm btn-primary mt-4 w-full"
+                @click="callSummarizeTasks()">
+                <p v-if="!state.generateAiSummaryLoading">Generate AI Summary</p>
+                <BoltIcon v-else class="w-4 h-4 animate-spin" />
+            </button>
+            <button class="card-stats-view btn btn-outline btn-sm btn-primary mt-4 w-full"
+                onclick="savedSummaries_modal.showModal()">
+                My AI Summaries
+            </button>
         </div>
 
         <div class="divider mt-16 px-10">Summary for {{ summaryText }}</div>
@@ -381,7 +390,7 @@ async function callSummarizeTasks() {
                     <BoltIcon :class="{ 'animate-spin': state.generateAiSummaryLoading }" class="w-4 h-4 mx-auto" />
                 </button>
                 <div class="tooltip tooltip-left ml-3"
-                    data-tip="This will create an AI-generated summary of all the tasks in the table. It will remove repeated items and emphasize creating a concise, professional summary with a focus on key achievements throughout the time period. Your summary will be saved to the 'My AI Summaries' tab. This won't affect any of the tasks/times in the table below.">
+                    data-tip="This will create an AI-generated summary of all the tasks in the table. It will remove repeated items and emphasize creating a concise, professional summary with a focus on key achievements throughout the time period. Your summary will be automatically saved to your account. This won't affect any of the tasks/times in the table below.">
                     <QuestionMarkCircleIcon class="w-5 h-5" />
                 </div>
             </div>
