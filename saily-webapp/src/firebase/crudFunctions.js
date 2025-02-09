@@ -227,7 +227,7 @@ export async function writeNewAiSummary(uid, summary, startDate, endDate, summar
 
 export async function readAllAiSummaries(uid) {
     const q = query(collection(db, "aiSummaries"), where("uid", "==", uid), orderBy("dateCreated", "desc"));
-    const querySnapshot = await getDocs(q)
+    const querySnapshot = await getDocs(q);
     let summaries = [];
     querySnapshot.forEach((doc) => {
         let summaryData = doc.data()
@@ -238,4 +238,17 @@ export async function readAllAiSummaries(uid) {
         summaries.push(summaryData)
     });
     return summaries;
+}
+
+// word of day
+export async function readWordOfTheDay() {
+    const q = query(collection(db, 'wordOfTheDay'), orderBy('dataSetIndex', 'desc'), limit(1));
+    const querySnapshot = await getDocs(q);
+    let wordOfTheDay = null;
+    querySnapshot.forEach((doc) => {
+        let data = doc.data();
+        data['docID'] = doc.id;
+        wordOfTheDay = data;
+    });
+    return wordOfTheDay;
 }

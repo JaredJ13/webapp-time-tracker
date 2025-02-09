@@ -3,7 +3,7 @@ import Summary from './Summary.vue';
 import { EllipsisHorizontalIcon, PlusCircleIcon, MinusCircleIcon, PencilIcon, ClockIcon } from '@heroicons/vue/20/solid';
 import { SuccessToast } from './toasts/SuccessToast';
 import { ErrorToast } from './toasts/ErrorToast';
-import { writeNewTime, readAllTimes, writeNewGroup, readAllGroups, editTime, endTime, deleteTime, deactivateGroup, reactivateGroup } from '../firebase/crudFunctions'
+import { writeNewTime, readAllTimes, writeNewGroup, readAllGroups, editTime, endTime, deleteTime, deactivateGroup, reactivateGroup, readWordOfTheDay } from '../firebase/crudFunctions'
 import { onMounted, reactive, computed, watch } from 'vue';
 import moment from 'moment'
 import lodash from 'lodash'
@@ -27,6 +27,7 @@ const state = reactive({
         hours: mainStore.selectedDate,
         minutes: mainStore.selectedDate,
     },
+    wordOfTheDay: null,
 });
 
 // computed 
@@ -70,6 +71,7 @@ onMounted(async () => {
         const allGroups = await readAllGroups(localStorage.uid);
         state.allGroups = allGroups;
         mainStore.allGroups = allGroups;
+        state.wordOfTheDay = await readWordOfTheDay();
     }
     catch (err) {
         console.log(err);
@@ -438,9 +440,8 @@ function handleFormatTimeRange(time) {
         <div class="divider px-10">Tasks for {{ moment(mainStore.selectedDate).format('ll') }}</div>
 
         <!-- daily task timeline -->
-        <div class="md:px-40 pt-3 mb-32">
-            <ul v-if="mainStore.allTimes.length > 0"
-                class="timeline timeline-snap-icon max-sm:timeline-compact timeline-vertical w-11/12 mx-auto">
+        <div v-if="mainStore.allTimes.length > 0" class="md:px-40 pt-3 mb-32">
+            <ul class="timeline timeline-snap-icon max-sm:timeline-compact timeline-vertical w-11/12 mx-auto">
                 <li v-for="(time, index) in mainStore.allTimes" :key="time.docID">
                     <div class="timeline-middle mx-2">
                         <PencilIcon @click="handleSwitchToEditTime(time)"
@@ -485,6 +486,35 @@ function handleFormatTimeRange(time) {
             </ul>
         </div>
         <!-- <div class="divider my-5 px-10"></div> -->
+
+        <div v-if="state.wordOfTheDay && mainStore.allTimes.length === 0"
+            class="card w-10/12 md:w-7/12 xl:w-6/12 mx-auto bg-base-200 shadow-lg p-4 mb-32 mt-10">
+            <div class="card-body">
+                <h2 class="font-bold text-center text-xl">
+                    Word of the Day
+                </h2>
+                <p class="font-bold text-xl italic text-accent">
+                    {{
+                        state.wordOfTheDay.word.charAt(0).toUpperCase() +
+                        state.wordOfTheDay.word.slice(1)
+                    }}
+                </p>
+                <div class="w-full mx-auto">
+                    <div v-for="(meaning, index) in state.wordOfTheDay.details[0].meanings" :key="index" class="mb-5">
+                        <p class="text-sm italic mb-1">{{ meaning.partOfSpeech }}</p>
+                        <div v-for="(definition, index) in meaning.definitions" :key="index" class="text-sm">
+                            <div class="mb-3">
+                                <p>{{ index + 1 }}. {{ definition.definition }}</p>
+                                <span class="mt-1 text-gray-500 ml-4" v-if="definition.example">
+                                    "{{ definition.example }}"
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <!-- manage groups modal -->
         <dialog id="modal_manageGroups" class="modal">

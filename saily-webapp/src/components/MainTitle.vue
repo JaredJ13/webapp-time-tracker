@@ -4,23 +4,26 @@ import { auth } from '../firebase/firebaseConfig';
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { SuccessToast } from './toasts/SuccessToast';
 import { ErrorToast } from './toasts/ErrorToast';
-import { ArrowLeftEndOnRectangleIcon } from '@heroicons/vue/20/solid';
+import { ArrowLeftEndOnRectangleIcon, StarIcon } from '@heroicons/vue/20/solid';
 import VueDatePicker from '@vuepic/vue-datepicker';
 // import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment';
 import { useMainStore } from '../stores/store';
-import { editUserSettings, readAllTimes, readUserSettings, writeNewUserSettings } from '../firebase/crudFunctions';
+import { editUserSettings, readAllTimes, readUserSettings, writeNewUserSettings, readWordOfTheDay } from '../firebase/crudFunctions';
 
 const mainStore = useMainStore();
 
 // on mount
 onMounted(async () => {
     await getUserSettings();
+    wordOfTheDay.value = await readWordOfTheDay();
 });
 
 // refs
 const selectedDayForTasks = ref(new Date());
 const appTheme = ref('light');
+const wordOfTheDay = ref(null);
+const modalWordOfTheDay = ref(false);
 
 // watchers 
 watch(selectedDayForTasks, async (newDate, oldDate) => {
@@ -111,6 +114,9 @@ async function handleSignOut() {
     }
 }
 
+function toggleWordOfTheDayModal() {
+    modalWordOfTheDay.value = !modalWordOfTheDay.value;
+}
 
 </script>
 
@@ -165,9 +171,21 @@ async function handleSignOut() {
             <h1 class="font-lobster text-5xl">Saily</h1>
             <p class="font-robotoCondensed italic mt-2">Track and Summarize your Daily Tasks</p>
         </div>
-        <ArrowLeftEndOnRectangleIcon
-            class="absolute right-10 top-5 cursor-pointer w-5 h-5 hover:text-error hover:cursor-pointer transition"
-            @click="handleSignOut()" />
+
+        <div class="absolute right-10 top-5 flex">
+            <div class="tooltip tooltip-bottom ml-3" data-tip="Word of the Day">
+                <div @click="toggleWordOfTheDayModal()"
+                    class="cursor-pointer mr-5 hover:text-secondary hover:cursor-pointer transition flex text-sm italic">
+                    <StarIcon class="w-5 h-5 ml-1" />
+                </div>
+            </div>
+
+            <div class="tooltip tooltip-bottom ml-3" data-tip="Sign Out">
+                <ArrowLeftEndOnRectangleIcon
+                    class="cursor-pointer w-5 h-5 hover:text-error hover:cursor-pointer transition"
+                    @click="handleSignOut()" />
+            </div>
+        </div>
 
         <div
             class="theme-and-date-select-div-small-viewports cursor-pointer w-12/12 flex-col items-center justify-center mt-4">
@@ -214,6 +232,36 @@ async function handleSignOut() {
                     :enable-time-picker="false" :clearable="false" :format="datePickerFormat" light />
             </div>
         </div>
+
+        <dialog class="modal" :class="{ 'modal-open': modalWordOfTheDay }">
+            <div v-if="wordOfTheDay" class="modal-box">
+                <p class="font-bold text-center text-lg ">
+                    Word of the Day
+                </p>
+                <p class="font-bold text-xl italic text-accent">
+                    {{
+                        wordOfTheDay.word.charAt(0).toUpperCase() +
+                        wordOfTheDay.word.slice(1)
+                    }}
+                </p>
+                <div class="w-full mx-auto">
+                    <div v-for="(meaning, index) in wordOfTheDay.details[0].meanings" :key="index" class="mb-5">
+                        <p class="text-sm italic mb-1">{{ meaning.partOfSpeech }}</p>
+                        <div v-for="(definition, index) in meaning.definitions" :key="index" class="text-sm">
+                            <div class="mb-3">
+                                <p>{{ index + 1 }}. {{ definition.definition }}</p>
+                                <span class="mt-1 text-gray-500 ml-4" v-if="definition.example">
+                                    "{{ definition.example }}"
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop" @click="toggleWordOfTheDayModal()">
+                <button>close</button>
+            </form>
+        </dialog>
     </div>
 </template>
 

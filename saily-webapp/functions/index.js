@@ -1,11 +1,16 @@
-const functions = require('firebase-functions');
+const { onRequest } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const Replicate = require('replicate');
 const cors = require('cors');
+const admin = require('firebase-admin');
+const fetch = require('node-fetch');
+const wordOfTheDayDataSet = require('./assets/wordOfTheDay.json');
+admin.initializeApp();
 
 // Initialize CORS
 const corsHandler = cors({ origin: true });
 
-const summarizeTasks = functions.https.onRequest((req, res) => {
+exports.summarizeTasks = onRequest(async (req, res) => {
     corsHandler(req, res, async () => {
         // Your existing code
         const replicate = new Replicate({
@@ -52,4 +57,96 @@ const summarizeTasks = functions.https.onRequest((req, res) => {
     });
 });
 
-module.exports = { summarizeTasks };
+
+// SCHEDULED FUNCTIONS
+
+// get definition for new word of the day from our dataset every day at midnight MST time
+exports.wordOfTheDay = onSchedule({
+    schedule: "0 0 * * *",
+    timeZone: "America/Edmonton"
+}, async (event) => {
+    console.log('Getting the word of the day');
+
+    // check the index of the last used word 
+    let nextWordToUseIndex = 0;
+    try {
+        const lastWordSnapshot = await admin.firestore().collection('wordOfTheDay').orderBy('dataSetIndex', 'desc').limit(1).get();
+
+        if (!lastWordSnapshot.empty) {
+            lastWordSnapshot.docs.forEach((doc) => {
+                nextWordToUseIndex = doc.data().dataSetIndex + 1;
+            });
+        }
+
+        console.log(`Next word to use index  = ${nextWordToUseIndex}`);
+    } catch (err) {
+        console.log(`An error occurred while trying to get the last word used index from the db: ${err}`);
+    }
+
+    try {
+        let wordOfTheDay = null;
+        // get the word of the day from our json data set
+        console.log('words data set length: ', wordOfTheDayDataSet.length)
+        if (nextWordToUseIndex <= wordOfTheDayDataSet.length - 1) {
+            wordOfTheDay = wordOfTheDayDataSet[nextWordToUseIndex];
+        } else {
+            // we've used all of the words in our dataset so lets go back to the first word
+            console.log('All words have been used in the dataset, going back to first word');
+            nextWordToUseIndex = 0;
+            wordOfTheDay = wordOfTheDayDataSet[nextWordToUseIndex];
+        }
+
+        // call dictionary api to get word definition
+        const definition = await getDictionaryDefinition(wordOfTheDay);
+
+        if (definition) {
+            console.log(`Retrieved definition for word ${wordOfTheDay}: ${definition}`);
+            // check if the definition was found 
+            if (definition.title !== 'No Definitions Found') {
+                // store the definition in Firestore
+                await admin.firestore().collection('wordOfTheDay').add({
+                    word: wordOfTheDay.toLowerCase(),
+                    details: definition,
+                    dataSetIndex: nextWordToUseIndex
+                });
+                console.log(`Wrote word of the day details to firestore for ${wordOfTheDay}`);
+            } else {
+                console.log(`No definition found from api for word: ${wordOfTheDay}, trying the next word in the data set`);
+                // try getting the next word definition in the dataset
+                const definition = await getDictionaryDefinition(wordOfTheDayDataSet[nextWordToUseIndex + 1]);
+                if (definition.title !== 'No Definitions Found') {
+                    await admin.firestore().collection('wordOfTheDay').add({
+                        word: wordOfTheDay.toLowerCase(),
+                        details: definition,
+                        dataSetIndex: nextWordToUseIndex + 1
+                    });
+                    console.log(`Wrote word of the day details to firestore for ${wordOfTheDay}`);
+                } else {
+                    console.log(`No definition found from api for word: ${wordOfTheDay} which was the second failed try for the word of the day today, dataset should be investigated`);
+                }
+            }
+        } else {
+            console.log(`The dictionary api call failed`);
+        }
+    } catch (error) {
+        console.error(`Error fetching word of the day`, error);
+    }
+
+    console.log('Word of the day function completed');
+});
+
+// function to get the dictionary definition
+async function getDictionaryDefinition(word) {
+    try {
+        let definition = null;
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+
+        if (response.ok) {
+            definition = await response.json();
+        }
+
+        return definition;
+    } catch (err) {
+        console.log(`An error occurred while calling the dictionary api: ${err}`);
+    }
+}
