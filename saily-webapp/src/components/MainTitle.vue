@@ -64,6 +64,8 @@ watch(appTheme, async (newTheme, oldTheme) => {
                 console.log(`An error occured while trying to edit the users settings (2): ${err}`);
             }
         }
+        // also store the theme in the user's local storage to apply on the login page
+        localStorage.setItem('selectedTheme', appTheme.value);
     }
 });
 
@@ -86,6 +88,7 @@ async function getUserSettings() {
                     // set app theme to the user's selected theme
                     const container = document.getElementById('appHTML');
                     container.setAttribute('data-theme', userSettings.theme);
+                    localStorage.setItem('selectedTheme', userSettings.theme);
                 }
             }
         } else {
