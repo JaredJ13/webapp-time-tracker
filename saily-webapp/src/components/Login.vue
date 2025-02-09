@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { auth } from '../firebase/firebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { SuccessToast } from './toasts/SuccessToast';
@@ -14,6 +14,14 @@ const password = ref(null);
 const newEmail = ref(null);
 const newPassword = ref(null);
 const newPasswordConfirm = ref(null);
+
+// on mount
+onMounted(() => {
+    const container = document.getElementById('appHTML');
+    // check if the user has a theme stored in local storage
+    const selectedTheme = localStorage.getItem('selectedTheme');
+    container.setAttribute('data-theme', selectedTheme ? selectedTheme : 'light');
+})
 
 // functions
 async function handleSignIn() {
@@ -163,7 +171,7 @@ async function handleSignUp() {
                         autocomplete="password" />
                 </label>
                 <div class="flex justify-end">
-                    <button type="submit" class="btn btn-md btn-success">Login</button>
+                    <button type="submit" class="btn btn-md btn-primary">Login</button>
                 </div>
                 <div className="divider my-12">OR</div>
             </form>
@@ -200,7 +208,7 @@ async function handleSignUp() {
                         placeholder="Confirm Password" />
                 </label>
                 <div class="flex justify-end mb-20">
-                    <button type="submit" class="btn btn-md btn-success">Sign Up</button>
+                    <button type="submit" class="btn btn-md btn-primary">Sign Up</button>
                 </div>
             </form>
 
