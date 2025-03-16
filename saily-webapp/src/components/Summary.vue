@@ -179,7 +179,9 @@ const groupTotals = computed(() => {
     generalGroupTotals.hours = Math.floor(generalGroupTotals.totalHours);
     generalGroupTotals.minutes = (generalGroupTotals.totalHours - generalGroupTotals.hours) * 60;
 
-    totals.push(generalGroupTotals);
+    if (generalGroupTotals.totalTasks > 0) {
+        totals.push(generalGroupTotals);
+    }
 
     props.allGroups.forEach((group) => {
         let groupTimes = allTimesCopy.filter((x) => x.groupDocID === group.docID);
