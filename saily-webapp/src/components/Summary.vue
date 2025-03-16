@@ -19,7 +19,8 @@ const state = reactive({
     summary: '',
     error: '',
     usersSavedSummaries: [],
-    generateAiSummaryLoading: false
+    generateAiSummaryLoading: false,
+    showTimeDetailsInSummary: false,
 });
 
 // on mount
@@ -92,7 +93,43 @@ const groupTotals = computed(() => {
 
     // get General group totals
     let generalGroupTimes = allTimesCopy.filter((x) => x.groupDocID === null);
-    let generalGroupTotals = { totalTasks: 0, totalHours: 0, hours: 0, minutes: 0, name: 'General', description: '' };
+    let generalGroupTotals = { totalTasks: 0, totalHours: 0, hours: 0, minutes: 0, name: 'General', description: '', dateOrganizedTimes: [], dateOrganizedDescription: '' };
+
+    // if show time details enabled, group times by month and day
+    if (state.showTimeDetailsInSummary) {
+        let groupedTimes = {};
+        // group by unique day, month, and year
+        generalGroupTimes.forEach(timeObj => {
+            // extract the unique date (YYYY-MM-DD)
+            const dateKey = new Date(timeObj.startTime).toISOString().split('T')[0];
+
+            // initialize the array if not present
+            if (!groupedTimes[dateKey]) {
+                groupedTimes[dateKey] = {
+                    date: dateKey,
+                    times: []
+                };
+            }
+
+            // add the time object to the correct group
+            groupedTimes[dateKey].times.push(timeObj);
+        });
+
+        // convert groupedTimes object to an array
+        generalGroupTotals.dateOrganizedTimes = Object.values(groupedTimes);
+
+        // generate description
+        generalGroupTotals.dateOrganizedTimes.forEach((dateGroup) => {
+            generalGroupTotals.dateOrganizedDescription += `${moment(dateGroup.date).format('ll')}\n`;
+            dateGroup.times.forEach((time, index) => {
+                if (index === dateGroup.times.length - 1) {
+                    generalGroupTotals.dateOrganizedDescription += `${moment(time.startTime).format('LT')} to ${time.endTime ? moment(time.endTime).format('LT') : 'Ongoing'}\n- ${time.description.trim() !== '' ? time.description : 'No description provided'}\n\n`;
+                } else {
+                    generalGroupTotals.dateOrganizedDescription += `${moment(time.startTime).format('LT')} to ${time.endTime ? moment(time.endTime).format('LT') : 'Ongoing'}\n- ${time.description.trim() !== '' ? time.description : 'No description provided'}\n`;
+                }
+            })
+        })
+    }
 
     generalGroupTimes.forEach((time) => {
         if (time.description.trim() !== '') {
@@ -146,7 +183,43 @@ const groupTotals = computed(() => {
 
     props.allGroups.forEach((group) => {
         let groupTimes = allTimesCopy.filter((x) => x.groupDocID === group.docID);
-        let groupTotals = { totalTasks: 0, totalHours: 0, hours: 0, minutes: 0, name: '', description: '' };
+        let groupTotals = { totalTasks: 0, totalHours: 0, hours: 0, minutes: 0, name: '', description: '', dateOrganizedTimes: [], dateOrganizedDescription: '' };
+
+        // if show time details enabled, group times by month and day
+        if (state.showTimeDetailsInSummary) {
+            let groupedTimes = {};
+            // group by unique day, month, and year
+            groupTimes.forEach(timeObj => {
+                // extract the unique date (YYYY-MM-DD)
+                const dateKey = new Date(timeObj.startTime).toISOString().split('T')[0];
+
+                // initialize the array if not present
+                if (!groupedTimes[dateKey]) {
+                    groupedTimes[dateKey] = {
+                        date: dateKey,
+                        times: []
+                    };
+                }
+
+                // add the time object to the correct group
+                groupedTimes[dateKey].times.push(timeObj);
+            });
+
+            // convert groupedTimes object to an array
+            groupTotals.dateOrganizedTimes = Object.values(groupedTimes);
+
+            // generate description
+            groupTotals.dateOrganizedTimes.forEach((dateGroup) => {
+                groupTotals.dateOrganizedDescription += `${moment(dateGroup.date).format('ll')}\n`;
+                dateGroup.times.forEach((time, index) => {
+                    if (index === dateGroup.times.length - 1) {
+                        groupTotals.dateOrganizedDescription += `${moment(time.startTime).format('LT')} to ${time.endTime ? moment(time.endTime).format('LT') : 'Ongoing'}\n- ${time.description.trim() !== '' ? time.description : 'No description provided'}\n\n`;
+                    } else {
+                        groupTotals.dateOrganizedDescription += `${moment(time.startTime).format('LT')} to ${time.endTime ? moment(time.endTime).format('LT') : 'Ongoing'}\n- ${time.description.trim() !== '' ? time.description : 'No description provided'}\n`;
+                    }
+                })
+            })
+        }
 
         groupTimes.forEach((time) => {
             if (time.description.trim() !== '') {
@@ -357,6 +430,11 @@ async function callSummarizeTasks() {
                 onclick="savedSummaries_modal.showModal()">
                 My AI Summaries
             </button>
+            <div class="flex mt-4 card-stats-view card-stats-view-show-details-switch-container">
+                <label class="mr-1 text-xs pt-1" for="showTimeDetails_switch">Show Time Details</label>
+                <input type="checkbox" checked="checked" class="toggle toggle-primary"
+                    v-model="state.showTimeDetailsInSummary" id="showTimeDetails_switch" />
+            </div>
         </div>
 
         <div class="divider mt-16 px-10">Summary for {{ summaryText }}</div>
@@ -394,6 +472,11 @@ async function callSummarizeTasks() {
                     <QuestionMarkCircleIcon class="w-5 h-5" />
                 </div>
             </div>
+            <div class="flex justify-end pt-8 pr-20">
+                <label class="mr-2" for="showTimeDetails_switch">Show Time Details</label>
+                <input type="checkbox" checked="checked" class="toggle toggle-primary"
+                    v-model="state.showTimeDetailsInSummary" id="showTimeDetails_switch" />
+            </div>
             <div class="card-body">
                 <div class="overflow-x-auto w-11/12 mx-auto mt-4 mb-20">
                     <table class="table">
@@ -412,9 +495,30 @@ async function callSummarizeTasks() {
                             <td class="border-b-2 border-accent">{{ total.name }}</td>
                             <td class="border-b-2 border-accent">{{ total.totalTasks }}</td>
                             <td class="border-b-2 border-accent">{{ total.totalHours.toFixed(2) }}</td>
-                            <td class="border-b-2 border-accent w-5/12 whitespace-pre-wrap text-left hover:cursor-pointer hover:text-success transition"
-                                @click="handleCopyToClipboard(total.description)">{{
-                                    total.description }}
+                            <td v-if="!state.showTimeDetailsInSummary"
+                                class="border-b-2 border-accent w-5/12 whitespace-pre-wrap text-left hover:cursor-pointer hover:text-success transition"
+                                @click="handleCopyToClipboard(total.description)">
+                                {{ total.description }}
+                            </td>
+                            <td v-else
+                                class="border-b-2 border-accent w-5/12 text-left hover:cursor-pointer hover:text-success transition"
+                                @click="handleCopyToClipboard(total.dateOrganizedDescription)">
+                                <div v-for="(dateGroup, dateGroupIndex) in total.dateOrganizedTimes"
+                                    :key="dateGroupIndex">
+                                    <p class="font-bold mb-1">{{ moment(dateGroup.date).format('ll') }}</p>
+                                    <div class="mb-4">
+                                        <div v-for="(dateGroupTime, dateGroupTimeIndex) in dateGroup.times"
+                                            :key="dateGroupTimeIndex">
+                                            <p class="mb-1 italic">{{
+                                                `${moment(dateGroupTime.startTime).format('LT')} to
+                                                ${dateGroupTime.endTime ? moment(dateGroupTime.endTime).format('LT') :
+                                                    'Ongoing'}` }}</p>
+                                            <p class="mb-3"
+                                                v-html="`- ${dateGroupTime.description.trim() !== '' ? dateGroupTime.description.replace(/\s-\s|\s-|- /g, '<br>- ') : 'No description provided'}`">
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                             <!-- <td class="border-b-2 border-accent hover:cursor-pointer hover:text-success transition">
                                 <BoltIcon class="w-4 h-4 mx-auto" />
@@ -446,8 +550,27 @@ async function callSummarizeTasks() {
                     :open="total.description && total.description.trim() !== '' ? true : null">
                     <summary class="collapse-title text-sm text-default font-medium pb-0">Description</summary>
                     <div class="collapse-content flex flex-col">
-                        <p class="whitespace-pre-wrap text-left">{{ total.description }}</p>
-                        <button @click="handleCopyToClipboard(total.description)"
+                        <p v-if="!state.showTimeDetailsInSummary" class="whitespace-pre-wrap text-left">{{
+                            total.description }}</p>
+                        <td v-else class="text-left transition">
+                            <div v-for="(dateGroup, dateGroupIndex) in total.dateOrganizedTimes" :key="dateGroupIndex">
+                                <p class="font-bold mb-1">{{ moment(dateGroup.date).format('ll') }}</p>
+                                <div class="mb-4">
+                                    <div v-for="(dateGroupTime, dateGroupTimeIndex) in dateGroup.times"
+                                        :key="dateGroupTimeIndex">
+                                        <p class="mb-1 italic">{{
+                                            `${moment(dateGroupTime.startTime).format('LT')} to
+                                            ${dateGroupTime.endTime ? moment(dateGroupTime.endTime).format('LT') :
+                                                'Ongoing'}` }}</p>
+                                        <p class="mb-3"
+                                            v-html="`- ${dateGroupTime.description.trim() !== '' ? dateGroupTime.description.replace(/\s-\s|\s-|- /g, '<br>- ') : 'No description provided'}`">
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <button
+                            @click="handleCopyToClipboard(!state.showTimeDetailsInSummary ? total.description : total.dateOrganizedDescription)"
                             class="btn btn-secondary text-xs mt-5 mx-auto copy-btn">
                             Copy to Clipboard
                         </button>

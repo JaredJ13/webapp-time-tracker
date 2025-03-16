@@ -59,6 +59,9 @@
   .card-stats-view{
     display: block;
   }
+  .card-stats-view-show-details-switch-container{
+    display: flex;
+  }
 }
 
 @media(min-width: 860px){
