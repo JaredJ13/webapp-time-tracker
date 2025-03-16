@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "firebase/auth";
 import { auth } from './firebase/firebaseConfig';
 import MainTitle from './components/MainTitle.vue';
 import TimeTracker from './components/TimeTracker.vue';
@@ -19,6 +19,14 @@ const pageSelected = ref('home');
 
 
 onMounted(() => {
+  // check if the user is already logged in, if so set store uid for the user
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      mainStore.uid = user.uid;
+      localStorage.setItem('uid', user.uid)
+    }
+  });
+
   // Optionally call googleSignIn for sign-in logic
   // googleSignIn().then((result) => {
   //   awaitingSignIn.value = false;
